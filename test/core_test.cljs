@@ -4,4 +4,4 @@
 
 (deftest sample-test
   (testing "sample test"
-    (is (= 1 1))))
+    (is (= 1 2))))
