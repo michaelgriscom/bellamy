@@ -1,6 +1,6 @@
 {:nrepl {:port 8777}
 
- 
+
 
  :source-paths ["src" "test"]
 
@@ -26,4 +26,13 @@
    :dev
    {:compiler-options
     {:closure-defines
-     { }}}}}}
+     {}}}}
+  :browser-test
+  {:target    :browser-test
+   :ns-regexp "-test$"
+   :runner-ns shadow.test.browser
+   :test-dir  "target/browser-test"}
+  :karma-test
+  {:target    :karma
+   :ns-regexp "-test$"
+   :output-to "target/karma-test.js"}}}
