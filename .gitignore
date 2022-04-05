@@ -31,3 +31,5 @@ pom.xml.asc
 /.idea
 resources/
 .DS_Store
+.clj-kondo
+.lsp
