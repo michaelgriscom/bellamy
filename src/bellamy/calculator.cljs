@@ -76,52 +76,53 @@
                            (get-card-reward card (get-expense-category expense)))
                           (get-expense-amount expense)))
 
-(defn get-category-from-card-reward [card-reward]
-  (first card-reward))
-
-(defn get-reward-function-from-card-reward [card-reward]
-  (last card-reward))
-
-;; (defn get-rewards-info [card expense]
-;;   )
-;; (def expense (first budget))
-;; (def card fidelity-visa)
 (defn get-card-reward-info [expense card]
   (let [[card-reward-category reward-function]
         (->> (get-expense-category expense)
              (get-card-reward card))
         expense-amount (get-expense-amount expense)]
-    [card-reward-category (calculate-reward-value reward-function expense-amount)]))
+    {:card-reward-category card-reward-category,
+     :reward-amount (calculate-reward-value reward-function expense-amount)}))
 
-(get-card-reward-info (first budget) fidelity-visa)
+(defn get-cards-reward-info [expense cards]
+  (map #(assoc (get-card-reward-info expense %) :card %) cards))
 
-(rest '(2))
+(defn get-best-reward [expense cards]
+  (->> (get-cards-reward-info expense cards)
+       (apply max-key :reward-amount)))
 
-;; (defn card-name [card] (card ))
+(defn get-total-rewards [cards budget]
+  (map #(assoc (get-best-reward % cards) :expense %) budget))
+
 (comment
-  ;; invalid, can't recur there
-  (defn get-best-reward [expense cards]
-    (let [first-reward-info (get-card-reward-info expense (first cards))
-          first-card-name ((first cards) :name)]
-      (cond (= 1 (count cards)) (conj first-reward-info first-card-name)
-            :else (max-key second (conj first-reward-info first-card-name) (recur expense (rest cards))))))
-  
-  (defn get-best-reward-2 [expense cards]
-    (let [card-reward-pairs (map (partial get-card-reward-info) cards)]))
-  )
+  (get-best-reward (first budget) [fidelity-visa super-visa])
+
+  (get-total-rewards [fidelity-visa, super-visa] budget)
+
+;; (map (partial get-card-reward-info) cards)
+
+  (get-card-reward-info (first budget) fidelity-visa)
+
+  ((partial get-card-reward-info (first budget)) fidelity-visa)
+
+;; #(assoc (partial get-card-reward-info expense) :card %)
+
+  (def test-list ({:amount 0} {:amount 2}))
+  (def test-vec [{:amount 0} {:amount 2}])
+  (max-key :amount test-list)
+  (apply max-key :amount test-vec)
+
+  (:amount (first (get-cards-reward-info (first budget) [fidelity-visa, super-visa])))
+
+  (max-key :amount (get-cards-reward-info (first budget) [fidelity-visa, super-visa]))
 
 
+  (def expense (first budget))
+  (def cards [fidelity-visa super-visa])
+  (get-card-reward-info expense fidelity-visa)
+  (map (partial get-card-reward-info expense) cards))
 
 
-  ;; (->> (map (partial get-card-reward-info expense) cards)
-  ;;      (max last)))
-
-(def expense (first budget))
-(def cards [fidelity-visa super-visa])
-(get-card-reward-info expense fidelity-visa)
-(map (partial get-card-reward-info expense) cards)
-
-(get-best-reward (first budget) [fidelity-visa])
 
 ;; Goal: (defn get-total-rewards [cards budget])
 
