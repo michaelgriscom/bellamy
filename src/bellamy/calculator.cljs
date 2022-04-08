@@ -7,44 +7,6 @@
                            :shopping :all,
                            :travel :all})
 
-;; (defn get-rewards [card expense]
-;;   [(first expense)
-;;    (* (card (first expense))
-;;       (last expense))])
-
-;; (defn calculate-rewards [budget card]
-;;   (into {}
-;;         (map
-;;          (partial get-rewards card)
-;;          (seq budget))))
-
-;; TODO: add dates to budget
-(def budget
-  {:travel 100.50,
-   :costco 200.00,
-   :groceries 300.00})
-    ;; (def budget
-    ;;   [{:category :travel, :amount :100.50},
-    ;;    {:category :costco, :amount :100.50},
-    ;;    {:category :dining, :amount :100.50}])
-
-(def fidelity-visa
-  {:name "Fidelity Visa",
-   :bank "Fidelity",
-   :card-network :visa,
-   :type :personal
-   :reward-type :cash-back,
-   :signup-bonus nil,
-   :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}})
-
-(def super-visa
-  {:name "Super Visa",
-   :bank "Super",
-   :card-network :visa,
-   :type :personal
-   :reward-type :cash-back,
-   :signup-bonus nil,
-   :rewards {:all {:cash-back (fn [expense] (* 0.5 expense))}}})
 
 (defn get-rewards-category
   "Gets the most narrow rewards category that a given expense matches for a given set of rewards"
@@ -95,6 +57,33 @@
   (map #(assoc (get-best-reward % cards) :expense %) budget))
 
 (comment
+  (def budget
+    {:travel 100.50,
+     :costco 200.00,
+     :groceries 300.00})
+    ;; (def budget
+    ;;   [{:category :travel, :amount :100.50},
+    ;;    {:category :costco, :amount :100.50},
+    ;;    {:category :dining, :amount :100.50}])
+
+(def fidelity-visa
+  {:name "Fidelity Visa",
+   :bank "Fidelity",
+   :card-network :visa,
+   :type :personal
+   :reward-type :cash-back,
+   :signup-bonus nil,
+   :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}})
+
+(def super-visa
+  {:name "Super Visa",
+   :bank "Super",
+   :card-network :visa,
+   :type :personal
+   :reward-type :cash-back,
+   :signup-bonus nil,
+   :rewards {:all {:cash-back (fn [expense] (* 0.5 expense))}}})
+
   (get-best-reward (first budget) [fidelity-visa super-visa])
 
   (get-total-rewards [fidelity-visa, super-visa] budget)
