@@ -16,6 +16,9 @@
    {:category :costco, :amount 100.50},
    {:category :dining, :amount 100.50}])
 
+(defn percent-cash-back [percent]
+  (fn [expense-amount] {:cash-back (* expense-amount (/ percent 100))}))
+
 (def cards
   [{:bellamy/credit-card.name "Fidelity Visa",
     :bank "Fidelity",
@@ -27,12 +30,22 @@
     :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}},
    {:bellamy/credit-card.name "Capital One Quicksilver",
     :bank "Capital One",
-    :url "https://www.capitalone.com/credit-cards/cash-back/quicksilver/,"
+    :url "https://www.capitalone.com/credit-cards/cash-back/quicksilver/",
     :card-network :visa,
     :type :personal,
     :reward-type :cash-back,
     :signup-bonus {:min-spend 500.00, :bonus {:cash-back 200}, :time {:months 3}},
-    :rewards {:all {:cash-back (fn [expense] (* 0.015 expense))}}}])
+    :rewards {:all {:cash-back (fn [expense] (* 0.015 expense))}}}
+   {:bellamy/credit-card.name "Costco anywhere Visa",
+    :url "https://www.citi.com/credit-cards/citi-costco-anywhere-visa-credit-card",
+    :card-network :visa,
+    :type :personal,
+    :signup-bonus nil,
+    :rewards {:gas {:cash-back (fn [expense] (* 0.04 expense))},
+              :restaraunts {:cash-back (fn [expense] (* 0.03 expense))},
+              :travel {:cash-back (fn [expense] (* 0.03 expense))},
+              :costco {:cash-back (fn [expense] (* 0.02 expense))},
+              :all {:cash-back (fn [expense] (* 0.01 expense))}}}])
 
 
 (s/valid? :bellamy/credit-card {:bellamy/credit-card.name "Fidelity Visa"})
