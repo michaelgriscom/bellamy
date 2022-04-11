@@ -1,45 +1,42 @@
 (ns bellamy.calculator
   (:require [clojure.spec.alpha :as s]))
 
-;; (def budget-categories [:groceries :shopping])
-
 (def budget-category-tree {:costco :groceries,
                            :groceries :all,
                            :shopping :all,
-                           :travel :all})
-
-(def card-networks #{:amex :visa :mastercard})
-(def card-types #{:business :personal})
+                           :travel :all,
+                           :restaraunts :all,})
 
 (def sample-budget
-  [{:category :travel, :amount 100.50},
-   {:category :costco, :amount 100.50},
-   {:category :dining, :amount 100.50}])
+  [{:expense-category :travel, :amount 100.50},
+   {:expense-category :costco, :amount 100.50},
+   {:expense-category :restaraunts, :amount 100.50}])
 
 (defn percent-cash-back [percent]
   (fn [expense-amount] {:cash-back (* expense-amount (/ percent 100))}))
 
 (def cards
-  [{:bellamy/credit-card.name "Fidelity Visa",
+  [{:name "Fidelity Visa",
     :bank "Fidelity",
     :url "https://www.fidelityrewards.com/",
     :card-network :visa,
-    :type :personal
+    :card-type :personal
     :reward-type :cash-back,
     :signup-bonus nil,
     :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}},
-   {:bellamy/credit-card.name "Capital One Quicksilver",
+   {:name "Capital One Quicksilver",
     :bank "Capital One",
     :url "https://www.capitalone.com/credit-cards/cash-back/quicksilver/",
     :card-network :visa,
-    :type :personal,
+    :card-type :personal,
     :reward-type :cash-back,
     :signup-bonus {:min-spend 500.00, :bonus {:cash-back 200}, :time {:months 3}},
     :rewards {:all {:cash-back (fn [expense] (* 0.015 expense))}}}
-   {:bellamy/credit-card.name "Costco anywhere Visa",
+   {:name "Costco anywhere Visa",
+    :bank "Citi",
     :url "https://www.citi.com/credit-cards/citi-costco-anywhere-visa-credit-card",
     :card-network :visa,
-    :type :personal,
+    :card-type :personal,
     :signup-bonus nil,
     :rewards {:gas {:cash-back (fn [expense] (* 0.04 expense))},
               :restaraunts {:cash-back (fn [expense] (* 0.03 expense))},
@@ -48,7 +45,7 @@
               :all {:cash-back (fn [expense] (* 0.01 expense))}}}])
 
 
-(s/valid? :bellamy/credit-card {:bellamy/credit-card.name "Fidelity Visa"})
+(s/valid? :bellamy/credit-card {:name "Fidelity Visa"})
 
 (s/valid? (s/coll-of :bellamy/credit-card) cards)
 
@@ -72,21 +69,10 @@
         :else nil))
 
 (defn get-expense-category [expense]
-  (expense :category))
+  (expense :expense-category))
 
 (defn get-expense-amount [expense]
   (expense :amount))
-
-;; (defn get-expense-category [expense]
-;;   (first expense))
-
-;; (defn get-expense-amount [expense]
-;;   (second expense))
-
-(defn get-rewards-value [card expense]
-  (calculate-reward-value (last
-                           (get-card-reward card (get-expense-category expense)))
-                          (get-expense-amount expense)))
 
 (defn get-card-reward-info [expense card]
   (let [[card-reward-category reward-function]
@@ -108,31 +94,25 @@
 
 
 (comment
-  ;; (def budget
-  ;;   {:travel 100.50,
-  ;;    :costco 200.00,
-  ;;    :groceries 300.00})
   (def budget
-    [{:category :travel, :amount 100.50},
-     {:category :costco, :amount 100.50},
-     {:category :dining, :amount 100.50}])
+    [{:expense-category :travel, :amount 100.50},
+     {:expense-category :costco, :amount 100.50},
+     {:expense-category :dining, :amount 100.50}])
 
   (def fidelity-visa
     {:name "Fidelity Visa",
      :bank "Fidelity",
      :card-network :visa,
-     :type :personal
+     :card-type :personal
      :reward-type :cash-back,
      :signup-bonus nil,
      :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}})
-
-
 
   (def super-visa
     {:name "Super Visa",
      :bank "Super",
      :card-network :visa,
-     :type :personal
+     :card-type :personal
      :reward-type :cash-back,
      :signup-bonus nil,
      :rewards {:all {:cash-back (fn [expense] (* 0.5 expense))}}})
@@ -141,13 +121,9 @@
 
   (get-total-rewards [fidelity-visa, super-visa] budget)
 
-;; (map (partial get-card-reward-info) cards)
-
   (get-card-reward-info (first budget) fidelity-visa)
 
   ((partial get-card-reward-info (first budget)) fidelity-visa)
-
-;; #(assoc (partial get-card-reward-info expense) :card %)
 
   (def test-list ({:amount 0} {:amount 2}))
   (def test-vec [{:amount 0} {:amount 2}])
@@ -163,30 +139,3 @@
   (def cards [fidelity-visa super-visa])
   (get-card-reward-info expense fidelity-visa)
   (map (partial get-card-reward-info expense) cards))
-
-
-
-;; Goal: (defn get-total-rewards [cards budget])
-
-(comment
-  (get-expense-category (first budget))
-
-  (first budget)
-  (get-rewards-value fidelity-visa (first budget))
-
-  ;; (defn get-reward-value-full [card expense]
-  ;;   {:spend expense,
-  ;;    :rewards})
-
-  (get-card-reward fidelity-visa :travel)
-
-  (last (get-card-reward fidelity-visa :travel))
-
-  ((last (get-card-reward fidelity-visa :travel)) :cash-back)
-
-  (calculate-reward-value (last (get-card-reward fidelity-visa :travel)) 100)
-
-  (get-expense-amount (first budget))
-  (last (first budget))
-
-  (get-rewards-value fidelity-visa (first budget)))
