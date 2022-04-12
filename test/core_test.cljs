@@ -53,17 +53,72 @@
                   :card-type :personal
                   :reward-type :cash-back,
                   :signup-bonus nil,
-                  :rewards {:all {:cash-back (fn [expense] (* 0.5 expense))}}})
+                  :rewards {:groceries {:cash-back (fn [expense] (* 0.5 expense))},
+                            :all {:cash-back (fn [expense] (* 0.01 expense))}}})
 
 (def test-expense {:expense-category :groceries, :amount 100})
+(def test-expense-2 {:expense-category :shopping, :amount 200})
+
+(def test-budget [test-expense test-expense-2])
 
 (deftest get-card-reward-info
   (testing "ensure that the correct reward info is returned"
     (is (= (calc/get-card-reward-info test-expense test-card)
-           {:card-reward-category :all, :reward-amount 2}))))
+           {:card-reward-category :all, :reward-value 2}))))
 
 (deftest get-best-reward
   (testing "ensure that the best reward is correct"
     (let [best-reward (calc/get-best-reward test-expense [test-card test-card-2])]
-      (is (= best-reward 
-             {:card-reward-category :all, :reward-amount 50, :card test-card-2})))))
+      (is (= best-reward
+             {:card-reward-category :groceries, :reward-value 50, :card test-card-2})))))
+
+(deftest get-total-rewards
+  (testing "ensure that the total rewards are correct"
+    (let [rewards (calc/get-total-rewards [test-card test-card-2] test-budget)]
+      (is (= rewards [{:card-reward-category :groceries, :reward-value 50, :card test-card-2, :expense test-expense}
+                      {:card-reward-category :all, :reward-value 4, :card test-card, :expense test-expense-2}])))))
+
+
+;; Points specs
+(s/def :bellamy/point-system #{:accor-le-club
+                               :aeroplan-loyalty-program
+                               :alaska-mileage-plan
+                               :american-aadvantage
+                               :american-express-membership-rewards
+                               :amtrak-guest-rewards
+                               :ana-mileage-club
+                               :asia-miles
+                               :avianca-lifemiles
+                               :avios
+                               :bank-of-america-premium-rewards
+                               :barclaycard-arrival-miles
+                               :best-western-rewards
+                               :bilt-rewards
+                               :brex-exclusive-rewards
+                               :capital-one-rewards
+                               :chase-ultimate-rewards
+                               :choice-privileges
+                               :citi-thank-you-points
+                               :delta-skymiles
+                               :diners-club-rewards
+                               :discover-rewards
+                               :emirates-skywards
+                               :etihad-guest
+                               :flying-blue
+                               :frontier-miles
+                               :hawaiian-miles
+                               :hilton-honors
+                               :ihg-rewards-club
+                               :jetblue-trueblue-rewards-program
+                               :korean-air-skypass
+                               :marriott-bonvoy
+                               :radisson-rewards
+                               :singapore-krisflyer
+                               :southwest-rapid-rewards
+                               :spirit-airlines-free-spirit
+                               :turkish-airlines-miles-and-smiles
+                               :us-bank-flexperks
+                               :united-mileage-plus
+                               :virgin-atlantic-flying-club
+                               :world-of-hyatt-loyalty-program
+                               :wyndham-rewards})

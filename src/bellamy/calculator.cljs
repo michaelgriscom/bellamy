@@ -12,8 +12,9 @@
    {:expense-category :costco, :amount 100.50},
    {:expense-category :restaraunts, :amount 100.50}])
 
-(defn percent-cash-back [percent]
-  (fn [expense-amount] {:cash-back (* expense-amount (/ percent 100))}))
+(defn percent-back [reward-type percent]
+  (fn [expense-amount] {:reward-type reward-type 
+                        :reward-amount (* expense-amount (/ percent 100))}))
 
 (def cards
   [{:name "Fidelity Visa",
@@ -44,10 +45,6 @@
               :costco {:cash-back (fn [expense] (* 0.02 expense))},
               :all {:cash-back (fn [expense] (* 0.01 expense))}}}])
 
-
-(s/valid? :bellamy/credit-card {:name "Fidelity Visa"})
-
-(s/valid? (s/coll-of :bellamy/credit-card) cards)
 
 (defn get-rewards-category
   "Gets the most narrow rewards category that a given expense matches for a given set of rewards"
@@ -80,14 +77,14 @@
              (get-card-reward card))
         expense-amount (get-expense-amount expense)]
     {:card-reward-category card-reward-category,
-     :reward-amount (calculate-reward-value reward-function expense-amount)}))
+     :reward-value (calculate-reward-value reward-function expense-amount)}))
 
 (defn get-cards-reward-info [expense cards]
   (map #(assoc (get-card-reward-info expense %) :card %) cards))
 
 (defn get-best-reward [expense cards]
   (->> (get-cards-reward-info expense cards)
-       (apply max-key :reward-amount)))
+       (apply max-key :reward-value)))
 
 (defn get-total-rewards [cards budget]
   (map #(assoc (get-best-reward % cards) :expense %) budget))
@@ -139,3 +136,53 @@
   (def cards [fidelity-visa super-visa])
   (get-card-reward-info expense fidelity-visa)
   (map (partial get-card-reward-info expense) cards))
+
+;; Need to handle cash-back
+(defn get-reward-value [reward, valuation] 
+  (let [point-multiplier (valuation (reward :reward-type))]
+    (* 0.01 point-multiplier (reward :reward-amount))))
+
+(def points-guy-valuation {:friendly-name "The Points Guy April 2022 valuation",
+                           :url "https://thepointsguy.com/guide/monthly-valuations/",
+                           :valuation {:accor-le-club	2,
+                                       :aeroplan-loyalty-program	1.5,
+                                       :alaska-mileage-plan	1.8,
+                                       :american-aadvantage	1.77,
+                                       :american-express-membership-rewards	2,
+                                       :amtrak-guest-rewards	2.5,
+                                       :ana-mileage-club	1.4,
+                                       :asia-miles	1.3,
+                                       :avianca-lifemiles	1.7,
+                                       :avios	1.5,
+                                       :bank-of-america-premium-rewards	1,
+                                       :barclaycard-arrival-miles	1,
+                                       :best-western-rewards	0.7,
+                                       :bilt-rewards	1.8,
+                                       :brex-exclusive-rewards	1.7,
+                                       :capital-one-rewards	1.85,
+                                       :chase-ultimate-rewards	2,
+                                       :choice-privileges	0.6,
+                                       :citi-thank-you-points	1.8,
+                                       :delta-skymiles	1.41,
+                                       :diners-club-rewards	2.1,
+                                       :discover-rewards	1,
+                                       :emirates-skywards	1.2,
+                                       :etihad-guest	1.4,
+                                       :flying-blue	1.2,
+                                       :frontier-miles	1.1,
+                                       :hawaiian-miles	0.9,
+                                       :hilton-honors	0.6,
+                                       :ihg-rewards-club	0.5,
+                                       :jetblue-trueblue-rewards-program	1.3,
+                                       :korean-air-skypass	1.7,
+                                       :marriott-bonvoy	0.8,
+                                       :radisson-rewards	0.4,
+                                       :singapore-krisflyer	1.3,
+                                       :southwest-rapid-rewards	1.5,
+                                       :spirit-airlines-free-spirit	1.1,
+                                       :turkish-airlines-miles-and-smiles	1.3,
+                                       :us-bank-flexperks	1.5,
+                                       :united-mileage-plus	1.21,
+                                       :virgin-atlantic-flying-club	1.5,
+                                       :world-of-hyatt-loyalty-program	1.7,
+                                       :wyndham-rewards	1.1}})
