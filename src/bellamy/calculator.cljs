@@ -65,17 +65,11 @@
   (cond (= (reward :reward-type) :cash-back) ((reward :reward-amount-fn) expense-amount)
         :else nil))
 
-(defn get-expense-category [expense]
-  (expense :expense-category))
-
-(defn get-expense-amount [expense]
-  (expense :amount))
-
 (defn get-card-reward-info [expense card]
   (let [[card-reward-category reward-function]
-        (->> (get-expense-category expense)
+        (->> (expense :expense-category)
              (get-card-reward card))
-        expense-amount (get-expense-amount expense)]
+        expense-amount (expense :amount)]
     {:card-reward-category card-reward-category,
      :reward-value (calculate-reward-amount reward-function expense-amount)}))
 
