@@ -45,16 +45,16 @@
                 :card-type :personal
                 :reward-type :cash-back,
                 :signup-bonus nil,
-                :rewards {:all {:cash-back (fn [expense] (* 0.02 expense))}}})
+                :rewards {:all (calc/percent-back :cash-back 2)}})
 
 (def test-card-2 {:name "Super Visa",
                   :bank "Super",
                   :card-network :visa,
                   :card-type :personal
                   :reward-type :cash-back,
-                  :signup-bonus nil,
-                  :rewards {:groceries {:cash-back (fn [expense] (* 0.5 expense))},
-                            :all {:cash-back (fn [expense] (* 0.01 expense))}}})
+                  :annual-fee 100,
+                  :rewards {:groceries (calc/percent-back :cash-back 50),
+                            :all (calc/percent-back :cash-back 1)}})
 
 (def test-expense {:expense-category :groceries, :amount 100})
 (def test-expense-2 {:expense-category :shopping, :amount 200})
@@ -75,8 +75,27 @@
 (deftest get-total-rewards
   (testing "ensure that the total rewards are correct"
     (let [rewards (calc/get-total-rewards [test-card test-card-2] test-budget)]
-      (is (= rewards [{:card-reward-category :groceries, :reward-value 50, :card test-card-2, :expense test-expense}
-                      {:card-reward-category :all, :reward-value 4, :card test-card, :expense test-expense-2}])))))
+      (is (= rewards [{:card-reward-category :groceries,
+                       :reward-value 50, :card test-card-2, :expense test-expense}
+                      {:card-reward-category :all,
+                       :reward-value 4, :card test-card, :expense test-expense-2}])))))
+
+(deftest get-net-rewards
+  (testing "ensure that the net rewards are correct"
+    (let [reward-value (calc/get-net-rewards [test-card test-card-2] test-budget)]
+      (is (= reward-value -46)))))
+
+(s/def :bellamy/friendly-name string?)
+;; (defn req-keys? [m] (and (contains? m :x) (contains? m :y)))
+;; (s/def :bellamy/valuation (s/and map? (s/coll-of ::entry ::into {}) req-keys?))
+(s/def :bellamy/points-valuation (s/keys :req-un
+                                         [:bellamy/friendly-name
+                                          :bellamy/url
+                                          :bellamy/valuation]))
+
+
+
+;; (s/def ::m (s/and map? (s/coll-of ::entry :into {}) req-keys?))
 
 
 ;; Points specs
@@ -122,3 +141,4 @@
                                :virgin-atlantic-flying-club
                                :world-of-hyatt-loyalty-program
                                :wyndham-rewards})
+
