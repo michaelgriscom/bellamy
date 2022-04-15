@@ -23,7 +23,6 @@
     :card-network :visa,
     :card-type :personal
     :reward-type :cash-back,
-    :signup-bonus nil,
     :rewards {:all (percent-back :cash-back 2)}},
    {:name "Capital One Quicksilver",
     :bank "Capital One",
@@ -31,14 +30,13 @@
     :card-network :visa,
     :card-type :personal,
     :reward-type :cash-back,
-    :signup-bonus {:min-spend 500.00, :bonus {:cash-back 200}, :time {:months 3}},
+    :signup-bonus {:min-spend 500.00, :bonus 200.00, :months 3},
     :rewards {:all {:cash-back (fn [expense] (* 0.015 expense))}}}
    {:name "Costco anywhere Visa",
     :bank "Citi",
     :url "https://www.citi.com/credit-cards/citi-costco-anywhere-visa-credit-card",
     :card-network :visa,
     :card-type :personal,
-    :signup-bonus nil,
     :rewards {:gas (percent-back :cash-back 4),
               :restaraunts (percent-back :cash-back 3),
               :travel (percent-back :cash-back 3),

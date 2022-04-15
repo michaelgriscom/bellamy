@@ -1,7 +1,8 @@
 (ns core-test
   (:require [cljs.test :refer-macros [deftest testing is]]
             [bellamy.calculator :as calc]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [clojure.set :as set]))
 
 ;; Credit card specs
 (s/def :bellamy/card-network #{:amex :visa :mastercard})
@@ -9,8 +10,21 @@
 (s/def :bellamy/name string?)
 (s/def :bellamy/bank string?)
 
+(s/def :bellamy/min-spend number?)
+(s/def :bellamy/bonus number?)
+(s/def :bellamy/months number?)
+
+(s/def :bellamy/signup-bonus (s/keys :req-un [:bellamy/min-spend :bellamy/bonus :bellamy/months]))
+
 (def url-regex #"(?i)^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$")
 (s/def :bellamy/url (s/and string? #(re-matches url-regex %)))
+
+
+(def expense-category? #{:groceries :shopping :travel :costco :restaraunts :gas})
+(s/def :bellamy/expense-category expense-category?)
+
+(s/def :bellamy/reward-category (set/union  expense-category? #{:all}))
+(s/def :bellamy/rewards (s/map-of :bellamy/reward-category any?))
 
 
 (s/def :bellamy/credit-card (s/keys :req-un
@@ -18,9 +32,18 @@
                                      :bellamy/bank
                                      :bellamy/card-network
                                      :bellamy/card-type
-                                     :bellamy/url]))
+                                     :bellamy/url
+                                     :bellamy/rewards]
+                                    :opt-un
+                                    [:bellamy/signup-bonus]
+                                    ))
 
-(s/explain (s/coll-of :bellamy/credit-card) calc/cards)
+(s/explain :bellamy/reward-category :all)
+(s/explain :bellamy/expense-category :gas)
+
+(comment
+  (s/explain (s/coll-of :bellamy/credit-card) calc/cards)
+  )
 
 (deftest cards-spec
   (testing "ensure that the default cards match spec"
@@ -28,7 +51,6 @@
 
 
 ;; Expense specs
-(s/def :bellamy/expense-category #{:groceries :shopping :travel :costco :restaraunts})
 (s/def :bellamy/amount number?)
 (s/def :bellamy/expense (s/keys :req-un
                                 [:bellamy/expense-category
@@ -86,17 +108,19 @@
       (is (= reward-value -46)))))
 
 (s/def :bellamy/friendly-name string?)
-;; (defn req-keys? [m] (and (contains? m :x) (contains? m :y)))
-;; (s/def :bellamy/valuation (s/and map? (s/coll-of ::entry ::into {}) req-keys?))
+(s/def :bellamy/valuation (s/map-of :bellamy/point-system number?))
 (s/def :bellamy/points-valuation (s/keys :req-un
                                          [:bellamy/friendly-name
                                           :bellamy/url
                                           :bellamy/valuation]))
 
+(deftest points-valuation-spec
+  (testing "ensure that the default point valuation matches spec"
+    (is (s/valid? :bellamy/points-valuation calc/points-guy-valuation))))
 
-
-;; (s/def ::m (s/and map? (s/coll-of ::entry :into {}) req-keys?))
-
+(comment
+  (s/explain :bellamy/points-valuation calc/points-guy-valuation)
+  )
 
 ;; Points specs
 (s/def :bellamy/point-system #{:accor-le-club
