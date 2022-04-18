@@ -3,7 +3,8 @@
             [bellamy.calculator :as calc]
             [clojure.spec.alpha :as s]
             [clojure.set :as set]
-            [clojure.math.combinatorics :as c]))
+            [bellamy.cards :as cards]
+            [bellamy.samples :as samples]))
 
 ;; Credit card specs
 (s/def :bellamy/card-network #{:amex :visa :mastercard})
@@ -43,12 +44,12 @@
 (s/explain :bellamy/expense-category :gas)
 
 (comment
-  (s/explain (s/coll-of :bellamy/credit-card) calc/cards)
+  (s/explain (s/coll-of :bellamy/credit-card) cards/cards)
   )
 
 (deftest cards-spec
   (testing "ensure that the default cards match spec"
-    (is (s/valid? (s/coll-of :bellamy/credit-card) calc/cards))))
+    (is (s/valid? (s/coll-of :bellamy/credit-card) cards/cards))))
 
 
 ;; Expense specs
@@ -59,7 +60,7 @@
 
 (deftest budget-spec
   (testing "ensure that the default budget matches spec"
-    (is (s/valid? (s/coll-of :bellamy/expense) calc/sample-budget))))
+    (is (s/valid? (s/coll-of :bellamy/expense) samples/sample-budget))))
 
 (def test-card {:name "Fidelity Visa",
                 :bank "Fidelity",
@@ -68,7 +69,7 @@
                 :card-type :personal
                 :reward-type :cash-back,
                 :signup-bonus nil,
-                :rewards {:all (calc/percent-back :cash-back 2)}})
+                :rewards {:all (cards/percent-back :cash-back 2)}})
 
 (def test-card-2 {:name "Super Visa",
                   :bank "Super",
@@ -76,8 +77,8 @@
                   :card-type :personal
                   :reward-type :cash-back,
                   :annual-fee 100,
-                  :rewards {:groceries (calc/percent-back :cash-back 50),
-                            :all (calc/percent-back :cash-back 1)}})
+                  :rewards {:groceries (cards/percent-back :cash-back 50),
+                            :all (cards/percent-back :cash-back 1)}})
 
 (def test-expense {:expense-category :groceries, :amount 100})
 (def test-expense-2 {:expense-category :shopping, :amount 200})
