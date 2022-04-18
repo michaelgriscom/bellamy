@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest testing is]]
             [bellamy.calculator :as calc]
             [clojure.spec.alpha :as s]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.math.combinatorics :as c]))
 
 ;; Credit card specs
 (s/def :bellamy/card-network #{:amex :visa :mastercard})
@@ -102,10 +103,10 @@
                       {:card-reward-category :all,
                        :reward-value 4, :card test-card, :expense test-expense-2}])))))
 
-(deftest get-net-rewards
+(deftest get-annual-rewards
   (testing "ensure that the net rewards are correct"
-    (let [reward-value (calc/get-net-rewards [test-card test-card-2] test-budget)]
-      (is (= reward-value -46)))))
+    (let [annual-rewards (calc/get-annual-rewards [test-card test-card-2] test-budget)]
+      (is (= (- (annual-rewards :total-rewards) (annual-rewards :annual-fees)) -46)))))
 
 (s/def :bellamy/friendly-name string?)
 (s/def :bellamy/valuation (s/map-of :bellamy/point-system number?))
@@ -165,4 +166,3 @@
                                :virgin-atlantic-flying-club
                                :world-of-hyatt-loyalty-program
                                :wyndham-rewards})
-

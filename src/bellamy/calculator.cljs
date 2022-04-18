@@ -1,5 +1,5 @@
 (ns bellamy.calculator
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.math.combinatorics :as c]))
 
 (def budget-category-tree {:costco :groceries,
                            :groceries :all,
@@ -135,15 +135,32 @@
    (defn get-annual-fees [cards]
      (reduce #((fnil + 0) %1 (%2 :annual-fee)) 0 cards))
 
-(defn get-annual-rewards [cards budget]
-  (->> (get-total-rewards cards budget)
-       (reduce #(+ %1 (%2 :reward-value)) 0)))
+;; (defn get-annual-rewards [cards budget]
+;;   (->> (get-total-rewards cards budget)
+;;        (reduce #(+ %1 (%2 :reward-value)) 0)))   
 
-(defn get-net-rewards [cards budget]
-  (let [annual-rewards (get-annual-rewards cards budget)
-        annual-fees (get-annual-fees cards)]
-    (- annual-rewards annual-fees)))
+    (defn get-annual-rewards [cards budget]
+      (let [total-rewards (get-total-rewards cards budget)]
+        {:rewards total-rewards,
+         :total-rewards (reduce #(+ %1 (%2 :reward-value)) 0 total-rewards),
+         :annual-fees (get-annual-fees cards)}))
    
+;; (defn get-net-rewards [cards budget]
+;;   (let [annual-rewards (get-annual-rewards cards budget)
+;;         annual-fees (get-annual-fees cards)]
+;;     (- annual-rewards annual-fees)))
+
+   
+
+(defn get-all-rewards [cards n budget]
+  (map #(assoc (get-annual-rewards % budget) :cards %) (c/combinations cards n)))
+   
+  ;;  (defn get-all-rewards-2 [cards n budget]
+  ;;    (map #(get-net-rewards % budget) (c/combinations cards n)))
+   
+;; (defn get-cards-reward-info [expense cards]
+;;   (map #(assoc (get-card-reward-info expense %) :card %) cards))
+
 (comment
   (def budget
     [{:expense-category :travel, :amount 100.50},
@@ -167,7 +184,7 @@
      :reward-type :cash-back,
      :signup-bonus nil,
      :rewards {:all {:cash-back (fn [expense] (* 0.5 expense))}}})
-
+  
   (get-best-reward (first budget) [fidelity-visa super-visa])
 
   (get-total-rewards [fidelity-visa, super-visa] budget)
