@@ -7,10 +7,10 @@
             [bellamy.samples :as samples]))
 
 ;; Credit card specs
-(s/def :bellamy/card-network #{:amex :visa :mastercard})
+(s/def :bellamy/bank #{:fidelity :capital-one :chase :citi})
+(s/def :bellamy/card-network #{:amex :visa :mastercard :discover})
 (s/def :bellamy/card-type #{:business :personal})
 (s/def :bellamy/name string?)
-(s/def :bellamy/bank string?)
 
 (s/def :bellamy/min-spend number?)
 (s/def :bellamy/bonus number?)
@@ -22,7 +22,24 @@
 (s/def :bellamy/url (s/and string? #(re-matches url-regex %)))
 
 
-(def expense-category? #{:groceries :shopping :travel :costco :restaraunts :gas})
+(def expense-category? #{:groceries
+                         :shopping
+                         :travel
+                         :costco
+                         :dining
+                         :gas
+                         :drugstore
+                          :airfare
+                         :hotel
+                         :cellular
+                         :internet
+                         :cable
+                         :telecommunications
+                         :entertainment
+                         :gym
+                         :office-supply
+                          :food-delivery
+                         })
 (s/def :bellamy/expense-category expense-category?)
 
 (s/def :bellamy/reward-category (set/union  expense-category? #{:all}))
@@ -63,7 +80,7 @@
     (is (s/valid? (s/coll-of :bellamy/expense) samples/sample-budget))))
 
 (def test-card {:name "Fidelity Visa",
-                :bank "Fidelity",
+                :bank :fidelity,
                 :url "https://www.fidelityrewards.com/",
                 :card-network :visa,
                 :card-type :personal
@@ -72,7 +89,7 @@
                 :rewards {:all (cards/percent-back :cash-back 2)}})
 
 (def test-card-2 {:name "Super Visa",
-                  :bank "Super",
+                  :bank :chase,
                   :card-network :visa,
                   :card-type :personal
                   :reward-type :cash-back,

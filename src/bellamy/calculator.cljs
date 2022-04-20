@@ -1,12 +1,25 @@
 (ns bellamy.calculator
   (:require [clojure.math.combinatorics :as combinatorics]
-          ))
+            ))
 
+;; TODO (?) switch to MCC codes https://github.com/greggles/mcc-codes
 (def budget-category-tree {:costco :groceries,
                            :groceries :all,
                            :shopping :all,
                            :travel :all,
-                           :restaraunts :all,})
+                           :dining :all,
+                           :drugstore :all,
+                           :gas :all,
+                           :airfare :travel,
+                           :hotel :travel,
+                           :telecommunications :all,
+                           :cellular :telecommunications,
+                           :internet :telecommunications,
+                           :cable :telecommunications,
+                           :entertainment :all,
+                           :gym :all,
+                           :office-supply :all,
+                           :food-delivery :dining,})
 
 (defn get-rewards-category
   "Gets the most narrow rewards category that a given expense matches for a given set of rewards"
